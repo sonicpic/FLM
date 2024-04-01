@@ -148,9 +148,9 @@ class FedAvg(Server):
 
         return result
 
-    def fedavg(model, selected_clients_set, output_dir, local_dataset_len_dict, epoch):
+    def fedavg(self,model, selected_clients_set, output_dir, local_dataset_len_dict, epoch):
         weights_array = normalize(
-            torch.tensor([local_dataset_len_dict[client_id] for client_id in selected_clients_set],
+            torch.tensor([local_dataset_len_dict[client.id] for client in selected_clients_set],
                          dtype=torch.float32),
             p=1, dim=0)
 

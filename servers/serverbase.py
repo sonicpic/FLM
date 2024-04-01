@@ -53,28 +53,11 @@ class Server(object):
         self.train_slow_clients = []
         self.send_slow_clients = []
 
-        self.uploaded_weights = []
-        self.uploaded_ids = []
-        self.uploaded_models = []
-
-        self.rs_test_acc = []
-        self.rs_test_auc = []
-        self.rs_train_loss = []
 
         # self.times = times
-        self.eval_gap = args.eval_gap
         self.client_drop_rate = args.client_drop_rate
         self.train_slow_rate = args.train_slow_rate
         self.send_slow_rate = args.send_slow_rate
-
-        self.dlg_eval = args.dlg_eval
-        self.dlg_gap = args.dlg_gap
-        self.batch_num_per_client = args.batch_num_per_client
-
-        self.num_new_clients = args.num_new_clients
-        self.new_clients = []
-        self.eval_new_clients = False
-        self.fine_tuning_epoch_new = args.fine_tuning_epoch_new
 
         #新加的
         self.ddp = False
@@ -88,6 +71,12 @@ class Server(object):
         self.local_num_epochs = args.local_num_epochs
         self.local_learning_rate = args.local_learning_rate
         self.group_by_length = args.group_by_length
+
+        self.previously_selected_clients_set = set()
+        self.last_client_id = None
+        self.output_dir = args.output_dir
+        self.local_dataset_len_dict = dict()
+        self.config = args.config
 
     def set_clients(self, clientObj):
         for i, train_slow, send_slow in zip(range(self.num_clients), self.train_slow_clients, self.send_slow_clients):
@@ -152,6 +141,7 @@ class Server(object):
 
             client.set_model(self.global_model)
 
+            #意义不明
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
 
@@ -159,7 +149,7 @@ class Server(object):
         assert (len(self.selected_clients) > 0)
 
         active_clients = random.sample(
-            self.selected_clients, int((1 - self.client_drop_rate) * self.current_num_join_clients))
+            self.selected_clients, int((1 - self.client_drop_rate) * (self.join_ratio * self.num_clients)))
 
         self.uploaded_ids = []
         self.uploaded_weights = []

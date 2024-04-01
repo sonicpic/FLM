@@ -280,10 +280,10 @@ class Client(object):
     def terminate_local_training(self, epoch, local_dataset_len_dict, previously_selected_clients_set):
 
         local_dataset_len_dict[self.id] = len(self.local_train_dataset)
-        new_adapter_weight = self.model.state_dict()
+        new_adapter_weight = self.model.state_dict()#权重
         single_output_dir = os.path.join(self.output_dir, str(epoch), "local_output_{}".format(self.id))
         os.makedirs(single_output_dir, exist_ok=True)
-        torch.save(new_adapter_weight, single_output_dir + "/pytorch_model.bin")
+        torch.save(new_adapter_weight, single_output_dir + "/pytorch_model.bin")#保存权重
 
         older_adapter_weight = get_peft_model_state_dict(self.model, self.params_dict_old, "default")
         set_peft_model_state_dict(self.model, older_adapter_weight, "default")

@@ -1,6 +1,6 @@
 # PFLlib: Personalized Federated Learning Algorithm Library
 # Copyright (C) 2021  Jianqing Zhang
-
+import os
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -18,6 +18,7 @@
 import time
 from threading import Thread
 
+import torch
 from tqdm import tqdm
 
 from client.clientavg import clientAVG
@@ -25,8 +26,8 @@ from servers.serverbase import Server
 
 
 class FedAvg(Server):
-    def __init__(self, args, times):
-        super().__init__(args, times)
+    def __init__(self, args):
+        super().__init__(args)
 
         # select slow clients
         self.set_slow_clients()
@@ -64,6 +65,23 @@ class FedAvg(Server):
 
                 print("Local training starts ... ")
                 client.train()
+
+                print("\nTerminating the local training of Client_{}".format(client.id))
+                model, self.local_dataset_len_dict, self.previously_selected_clients_set, last_client_id = client.terminate_local_training(
+                    i, self.local_dataset_len_dict, self.previously_selected_clients_set)
+
+            print("Collecting the weights of clients and performing aggregation")
+            model = FedAvg(model,
+                           self.selected_clients,
+                           self.output_dir,
+                           self.local_dataset_len_dict,
+                           i,
+                           )
+            torch.save(model.state_dict(), os.path.join(self.output_dir, str(i), "adapter_model.bin"))
+            self.config.save_pretrained(self.output_dir)
+
+            # Please design the evaluation method based on your specific requirements in the fed_utils/evaluation.py file.
+            # global_evaluation()
 
             # threads = [Thread(target=client.train)
             #            for client in self.selected_clients]

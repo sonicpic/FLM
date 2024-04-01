@@ -110,7 +110,7 @@ if __name__ == '__main__':
     # 梯度检查点
 
     # PEFT模型
-    config = LoraConfig(
+    args.config = LoraConfig(
         r=args.lora_r,
         lora_alpha=args.lora_alpha,
         target_modules=args.lora_target_modules,
@@ -119,13 +119,13 @@ if __name__ == '__main__':
         task_type="CAUSAL_LM",
     )
 
-    model = get_peft_model(model, config)
+    model = get_peft_model(model, args.config)
     args.model = model
 
     print("The process of federated instruction-tuning has started..")
     previously_selected_clients_set = set()
     last_client_id = None
-    local_dataset_len_dict = dict()
+    args.local_dataset_len_dict = dict()
     args.output_dir = os.path.join(args.output_dir, str(args.num_clients))
 
     #开始训练

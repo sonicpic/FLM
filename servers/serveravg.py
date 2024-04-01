@@ -154,7 +154,8 @@ class FedAvg(Server):
                          dtype=torch.float32),
             p=1, dim=0)
 
-        for k, client_id in enumerate(selected_clients_set):
+        for k, client in enumerate(selected_clients_set):
+            client_id = client.id
             single_output_dir = os.path.join(output_dir, str(epoch), "local_output_{}".format(client_id),
                                              "pytorch_model.bin")
             single_weights = torch.load(single_output_dir)

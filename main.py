@@ -40,9 +40,9 @@ if __name__ == '__main__':
                         help="Strategy to select clients for federated learning.")
     parser.add_argument("--client_selection_frac", type=float, default=0.1,
                         help="Fraction of clients to select in each round.")
-    parser.add_argument("--num_communication_rounds", type=int, default=50,
+    parser.add_argument("--num_communication_rounds", type=int, default=5,
                         help="Number of communication rounds in federated learning.")
-    parser.add_argument("--num_clients", type=int, default=10,
+    parser.add_argument("--num_clients", type=int, default=50,
                         help="Total number of clients.")
     # Local training hyperparams
     parser.add_argument("--local_batch_size", type=int, default=64,

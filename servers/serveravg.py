@@ -19,10 +19,14 @@ import time
 from threading import Thread
 
 import torch
+from peft import set_peft_model_state_dict
 from tqdm import tqdm
 
 from client.clientavg import clientAVG
 from servers.serverbase import Server
+
+from torch.nn.functional import normalize
+
 
 
 class FedAvg(Server):
@@ -67,17 +71,17 @@ class FedAvg(Server):
                 client.train()
 
                 print("\nTerminating the local training of Client_{}".format(client.id))
-                model, self.local_dataset_len_dict, self.previously_selected_clients_set, last_client_id = client.terminate_local_training(
+                self.local_dataset_len_dict, self.previously_selected_clients_set, last_client_id = client.terminate_local_training(
                     i, self.local_dataset_len_dict, self.previously_selected_clients_set)
 
             print("Collecting the weights of clients and performing aggregation")
-            model = FedAvg(model,
-                           self.selected_clients,
-                           self.output_dir,
-                           self.local_dataset_len_dict,
-                           i,
-                           )
-            torch.save(model.state_dict(), os.path.join(self.output_dir, str(i), "adapter_model.bin"))
+            self.model = self.fedavg(self.model,
+                                     self.selected_clients,
+                                     self.output_dir,
+                                     self.local_dataset_len_dict,
+                                     i,
+                                     )
+            torch.save(self.model.state_dict(), os.path.join(self.output_dir, str(i), "adapter_model.bin"))
             self.config.save_pretrained(self.output_dir)
 
             # Please design the evaluation method based on your specific requirements in the fed_utils/evaluation.py file.
@@ -143,3 +147,25 @@ class FedAvg(Server):
         result["labels"] = result["input_ids"].copy()
 
         return result
+
+    def fedavg(model, selected_clients_set, output_dir, local_dataset_len_dict, epoch):
+        weights_array = normalize(
+            torch.tensor([local_dataset_len_dict[client_id] for client_id in selected_clients_set],
+                         dtype=torch.float32),
+            p=1, dim=0)
+
+        for k, client_id in enumerate(selected_clients_set):
+            single_output_dir = os.path.join(output_dir, str(epoch), "local_output_{}".format(client_id),
+                                             "pytorch_model.bin")
+            single_weights = torch.load(single_output_dir)
+            if k == 0:
+                weighted_single_weights = {key: single_weights[key] * (weights_array[k]) for key in
+                                           single_weights.keys()}
+            else:
+                weighted_single_weights = {key: weighted_single_weights[key] + single_weights[key] * (weights_array[k])
+                                           for key in
+                                           single_weights.keys()}
+
+        set_peft_model_state_dict(model, weighted_single_weights, "default")
+
+        return model

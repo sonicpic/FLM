@@ -45,13 +45,13 @@ if __name__ == '__main__':
     parser.add_argument("--num_clients", type=int, default=50,
                         help="Total number of clients.")
     # Local training hyperparams
-    parser.add_argument("--local_batch_size", type=int, default=64,
+    parser.add_argument("--local_batch_size", type=int, default=32,
                         help="Batch size for local training.")
     parser.add_argument("--local_micro_batch_size", type=int, default=8,
                         help="Micro batch size for local training.")
     parser.add_argument("--local_num_epochs", type=int, default=10,
                         help="Number of epochs for local training.")
-    parser.add_argument("--local_learning_rate", type=float, default=3e-4,
+    parser.add_argument("--local_learning_rate", type=float, default=1.5e-4,
                         help="Learning rate for local training.")
     parser.add_argument("--local_val_set_size", type=int, default=0,
                         help="Validation set size for local training.")
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     parser.add_argument("--cutoff_len", type=int, default=512,
                         help="Cutoff length for model inputs.")
     # LoRA hyperparams
-    parser.add_argument("--lora_r", type=int, default=16,
+    parser.add_argument("--lora_r", type=int, default=8,
                         help="Rank of LoRA.")
     parser.add_argument("--lora_alpha", type=int, default=16,
                         help="Alpha parameter for LoRA.")
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     for arg in vars(args):
         print(f"{arg}: {getattr(args, arg)}")
 
-    data_path = os.path.join(args.data_path, str(args.num_clients))
-    print(data_path)
+    args.data_path = os.path.join(args.data_path, str(args.num_clients))
+    print(args.data_path)
 
     # set up the global model & toknizer
     args.gradient_accumulation_steps = args.local_batch_size // args.local_micro_batch_size

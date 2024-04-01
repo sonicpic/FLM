@@ -290,7 +290,9 @@ class Client(object):
         previously_selected_clients_set = previously_selected_clients_set | set({self.id})
         last_client_id = self.id
 
-        return self.model, local_dataset_len_dict, previously_selected_clients_set, last_client_id
+        del self.model
+
+        return local_dataset_len_dict, previously_selected_clients_set, last_client_id
 
     def set_model(self, model):
         self.model = model

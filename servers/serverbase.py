@@ -27,26 +27,26 @@ class Server(object):
     def __init__(self, args):
         # Set up the main attributes
         self.args = args
-        self.device = args.device
-        self.dataset = args.dataset
-        self.num_classes = args.num_classes
-        self.global_rounds = args.global_rounds
-        self.local_epochs = args.local_epochs
-        self.batch_size = args.batch_size
-        self.learning_rate = args.local_learning_rate
-        self.global_model = copy.deepcopy(args.model)
+        # self.device = args.device
+        # self.dataset = args.dataset
+        # self.num_classes = args.num_classes
+        # self.global_rounds = args.global_rounds
+        # self.local_epochs = args.local_epochs
+        # self.batch_size = args.batch_size
+        # self.learning_rate = args.local_learning_rate
+        # self.global_model = copy.deepcopy(args.model)
         self.num_clients = args.num_clients
-        self.join_ratio = args.join_ratio
-        self.random_join_ratio = args.random_join_ratio
+        self.join_ratio = args.client_selection_frac
+        # self.random_join_ratio = args.random_join_ratio
         self.num_join_clients = int(self.num_clients * self.join_ratio)
-        self.current_num_join_clients = self.num_join_clients
-        self.algorithm = args.algorithm
-        self.time_select = args.time_select
-        self.goal = args.goal
-        self.time_threthold = args.time_threthold
-        self.save_folder_name = args.save_folder_name
-        self.top_cnt = 100
-        self.auto_break = args.auto_break
+        # self.current_num_join_clients = self.num_join_clients
+        # self.algorithm = args.algorithm
+        # self.time_select = args.time_select
+        # self.goal = args.goal
+        # self.time_threthold = args.time_threthold
+        # self.save_folder_name = args.save_folder_name
+        # self.top_cnt = 100
+        # self.auto_break = args.auto_break
 
         self.clients = []
         self.selected_clients = []
@@ -55,9 +55,12 @@ class Server(object):
 
 
         # self.times = times
-        self.client_drop_rate = args.client_drop_rate
-        self.train_slow_rate = args.train_slow_rate
-        self.send_slow_rate = args.send_slow_rate
+        # self.client_drop_rate = args.client_drop_rate
+        # self.train_slow_rate = args.train_slow_rate
+        # self.send_slow_rate = args.send_slow_rate
+        self.client_drop_rate = 0
+        self.train_slow_rate = 0
+        self.send_slow_rate = 0
 
         #新加的
         self.ddp = False
@@ -77,6 +80,8 @@ class Server(object):
         self.output_dir = args.output_dir
         self.local_dataset_len_dict = dict()
         self.config = args.config
+
+        self.model = args.model
 
     def set_clients(self, clientObj):
         for i, train_slow, send_slow in zip(range(self.num_clients), self.train_slow_clients, self.send_slow_clients):
@@ -139,46 +144,46 @@ class Server(object):
         for client in self.selected_clients:
             start_time = time.time()
 
-            client.set_model(self.global_model)
+            client.set_model(self.model)
 
             #意义不明
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
 
-    def receive_models(self):
-        assert (len(self.selected_clients) > 0)
+    # def receive_models(self):
+    #     assert (len(self.selected_clients) > 0)
+    #
+    #     active_clients = random.sample(
+    #         self.selected_clients, int((1 - self.client_drop_rate) * (self.join_ratio * self.num_clients)))
+    #
+    #     self.uploaded_ids = []
+    #     self.uploaded_weights = []
+    #     self.uploaded_models = []
+    #     tot_samples = 0
+    #     for client in active_clients:
+    #         try:
+    #             client_time_cost = client.train_time_cost['total_cost'] / client.train_time_cost['num_rounds'] + \
+    #                                client.send_time_cost['total_cost'] / client.send_time_cost['num_rounds']
+    #         except ZeroDivisionError:
+    #             client_time_cost = 0
+    #         if client_time_cost <= self.time_threthold:
+    #             tot_samples += client.train_samples
+    #             self.uploaded_ids.append(client.id)
+    #             self.uploaded_weights.append(client.train_samples)
+    #             self.uploaded_models.append(client.model)
+    #     for i, w in enumerate(self.uploaded_weights):
+    #         self.uploaded_weights[i] = w / tot_samples
 
-        active_clients = random.sample(
-            self.selected_clients, int((1 - self.client_drop_rate) * (self.join_ratio * self.num_clients)))
-
-        self.uploaded_ids = []
-        self.uploaded_weights = []
-        self.uploaded_models = []
-        tot_samples = 0
-        for client in active_clients:
-            try:
-                client_time_cost = client.train_time_cost['total_cost'] / client.train_time_cost['num_rounds'] + \
-                                   client.send_time_cost['total_cost'] / client.send_time_cost['num_rounds']
-            except ZeroDivisionError:
-                client_time_cost = 0
-            if client_time_cost <= self.time_threthold:
-                tot_samples += client.train_samples
-                self.uploaded_ids.append(client.id)
-                self.uploaded_weights.append(client.train_samples)
-                self.uploaded_models.append(client.model)
-        for i, w in enumerate(self.uploaded_weights):
-            self.uploaded_weights[i] = w / tot_samples
-
-    def aggregate_parameters(self):
-        assert (len(self.uploaded_models) > 0)
-
-        self.global_model = copy.deepcopy(self.uploaded_models[0])
-        for param in self.global_model.parameters():
-            param.data.zero_()
-
-        for w, client_model in zip(self.uploaded_weights, self.uploaded_models):
-            self.add_parameters(w, client_model)
-
-    def add_parameters(self, w, client_model):
-        for server_param, client_param in zip(self.global_model.parameters(), client_model.parameters()):
-            server_param.data += client_param.data.clone() * w
+    # def aggregate_parameters(self):
+    #     assert (len(self.uploaded_models) > 0)
+    #
+    #     self.global_model = copy.deepcopy(self.uploaded_models[0])
+    #     for param in self.global_model.parameters():
+    #         param.data.zero_()
+    #
+    #     for w, client_model in zip(self.uploaded_weights, self.uploaded_models):
+    #         self.add_parameters(w, client_model)
+    #
+    # def add_parameters(self, w, client_model):
+    #     for server_param, client_param in zip(self.global_model.parameters(), client_model.parameters()):
+    #         server_param.data += client_param.data.clone() * w

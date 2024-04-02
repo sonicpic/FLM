@@ -5,14 +5,14 @@ import os
 from tqdm import tqdm  # 用于进度条展示
 import torch
 import time
-
+from utils.conversation import get_conv_template  # 导入对话模板工具
 from peft import PeftModel  # PEFT模型，可能是对模型进行参数效率调整的一种方法
 from transformers import AutoModelForCausalLM, AutoTokenizer  # 导入Hugging Face库中的模型和分词器
 
 import sys
-
+import sys
+sys.path.append('/root/FLM')
 sys.path.append("../../")  # 添加路径以便可以导入其他模块
-from utils.conversation import get_conv_template  # 导入对话模板工具
 
 # 配置不同对话类型的温度参数，控制生成文本的随机性
 temperature_config = {

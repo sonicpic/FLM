@@ -1,5 +1,6 @@
 # test.py
-from transformers import AutoConfig, AutoModel, AutoTokenizer
+from peft import PeftConfig, PeftModel, LoraConfig
+from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
 import torch
 import os
 
@@ -7,6 +8,22 @@ import os
 def load_model_and_tokenizer(model_dir, model_filename="adapter_model.bin"):
     """加载模型和分词器"""
     model_path = os.path.join(model_dir, model_filename)
+
+    config = LoraConfig(
+        r=8,
+        lora_alpha=16,
+        target_modules=["q_proj"],
+        lora_dropout=0.05,
+        bias="none",
+        task_type="CAUSAL_LM",
+    )
+    model = AutoModelForCausalLM.from_pretrained(
+        'meta-llama/Llama-2-7b-hf',
+        load_in_8bit=True,
+        torch_dtype=torch.float16,
+    )
+
+    model = PeftModel.from_pretrained(model, "stevhliu/vit-base-patch16-224-in21k-lora")
 
     # 加载配置
     config = AutoConfig.from_pretrained(model_dir)

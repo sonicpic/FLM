@@ -60,6 +60,7 @@ class FedAvg(Server):
                                      self.local_dataset_len_dict,
                                      round,
                                      )
+            self.model.save_pretrained(os.path.join(self.output_dir, str(round)))
             torch.save(self.model.state_dict(), os.path.join(self.output_dir, str(round), "adapter_model.bin"))
             self.config.save_pretrained(self.output_dir)
 

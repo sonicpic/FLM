@@ -17,6 +17,10 @@ from peft import (
 class Client(object):
 
     def __init__(self, args, id, **kwargs):
+        self.cutoff_len = None
+        self.tokenizer = None
+        self.train_on_inputs = None
+        self.prompter = None
         self.model = None  # 模型等服务器统一分发
         self.id = id  # 客户端ID
         self.local_data_path = os.path.join(args.data_path, "local_training_{}.json".format(self.id))
@@ -166,3 +170,9 @@ class Client(object):
 
     def set_model(self, model):
         self.model = model
+        
+    def set_args(self,prompter,train_on_inputs,tokenizer,cutoff_len):
+        self.prompter = prompter
+        self.train_on_inputs = train_on_inputs
+        self.tokenizer = tokenizer
+        self.cutoff_len = cutoff_len

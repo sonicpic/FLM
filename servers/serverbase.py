@@ -106,6 +106,7 @@ class Server(object):
         for client in self.selected_clients:
             start_time = time.time()
             client.set_model(self.model)
+            client.set_args(self.prompter,self.train_on_inputs,self.tokenizer,self.cutoff_len)
             # 意义不明
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)

@@ -1,60 +1,14 @@
-# PFLlib: Personalized Federated Learning Algorithm Library
-# Copyright (C) 2021  Jianqing Zhang
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-import torch
-import os
 import numpy as np
-import copy
 import time
-import random
 
 
 class Server(object):
     def __init__(self, args):
-        # Set up the main attributes
         self.args = args
-        # self.device = args.device
-        # self.dataset = args.dataset
-        # self.num_classes = args.num_classes
-        # self.global_rounds = args.global_rounds
-        # self.local_epochs = args.local_epochs
-        # self.batch_size = args.batch_size
-        # self.learning_rate = args.local_learning_rate
-        # self.global_model = copy.deepcopy(args.model)
-        self.num_clients = args.num_clients
-        self.join_ratio = args.client_selection_frac
-        # self.random_join_ratio = args.random_join_ratio
-        self.num_join_clients = int(self.num_clients * self.join_ratio)
-        # self.current_num_join_clients = self.num_join_clients
-        # self.algorithm = args.algorithm
-        # self.time_select = args.time_select
-        # self.goal = args.goal
+        self.model = args.model # 模型
+
+        # 异质性模拟参数
         # self.time_threthold = args.time_threthold
-        # self.save_folder_name = args.save_folder_name
-        # self.top_cnt = 100
-        # self.auto_break = args.auto_break
-
-        self.clients = []
-        self.selected_clients = []
-        self.train_slow_clients = []
-        self.send_slow_clients = []
-
-
-        # self.times = times
         # self.client_drop_rate = args.client_drop_rate
         # self.train_slow_rate = args.train_slow_rate
         # self.send_slow_rate = args.send_slow_rate
@@ -62,34 +16,47 @@ class Server(object):
         self.train_slow_rate = 0
         self.send_slow_rate = 0
 
-        #新加的
-        self.ddp = False
-        self.prompter = args.prompter
-        self.cutoff_len = args.cutoff_len
-        self.local_val_set_size = args.local_val_set_size
-        self.train_on_inputs = args.train_on_inputs
-        self.tokenizer = args.tokenizer
-        self.local_micro_batch_size = args.local_micro_batch_size
-        self.gradient_accumulation_steps = args.gradient_accumulation_steps
-        self.local_num_epochs = args.local_num_epochs
-        self.local_learning_rate = args.local_learning_rate
-        self.group_by_length = args.group_by_length
+        # 模型/数据集参数
+        self.output_dir = args.output_dir  # 微调模型的输出目录
 
-        self.previously_selected_clients_set = set()
-        self.last_client_id = None
-        self.output_dir = args.output_dir
-        self.local_dataset_len_dict = dict()
-        self.config = args.config
+        # 联邦学习超参数
+        self.client_selection_strategy = args.client_selection_strategy # 客户端选择策略
+        self.num_clients = args.num_clients # 客户端总数
+        self.join_ratio = args.client_selection_frac    # 每轮选中的客户端比例
+        self.num_join_clients = int(self.num_clients * self.join_ratio) # 每轮选中的客户端数量
+        self.algorithm = args.algorithm # 联邦学习聚合算法
 
-        self.model = args.model
+        # 本地训练超参数
+        self.local_micro_batch_size = args.local_micro_batch_size  # 本地训练的微批量大小
+        self.local_num_epochs = args.local_num_epochs  # 本地训练的轮数
+        self.local_learning_rate = args.local_learning_rate  # 本地训练的学习率
+        self.local_val_set_size = args.local_val_set_size  # 本地训练的验证集大小
+        self.cutoff_len = args.cutoff_len  # 模型输入的截断长度
+
+        # 大语言模型超参数
+        self.train_on_inputs = args.train_on_inputs  # 是否在输入上进行训练
+        self.group_by_length = args.group_by_length  # 是否按长度分组以提高训练效率
+
+        self.ddp = False    # 和多卡训练有关
+        self.prompter = args.prompter   # prompter实例
+        self.gradient_accumulation_steps = args.gradient_accumulation_steps # 执行一次梯度更新前需要累积的微批次的数量
+        self.tokenizer = args.tokenizer # tokenizer实例
+        self.config = args.config  # PEFT模型配置
+
+        self.previously_selected_clients_set = set()  # 用于存储之前被选中进行训练的客户端的集合
+        self.last_client_id = None  # 存储最后一个进行训练的客户端的ID
+        self.local_dataset_len_dict = dict()  # 用于存储各客户端本地数据集长度的字典
+
+        self.clients = []   # 存放所有客户端实例
+        self.selected_clients = []  # 存放被选中的客户端实例
+        self.train_slow_clients = []    # bool标签，标识是否为慢客户端
+        self.send_slow_clients = [] # bool标签，标识是否为慢客户端
 
     def set_clients(self, clientObj):
         for i, train_slow, send_slow in zip(range(self.num_clients), self.train_slow_clients, self.send_slow_clients):
             # TODO:这里先创建了所有的client，会不会内存溢出，如果不会的话，那么没有关系了。如果会的话，那么就是训练的时候实时创建并释放
             client = clientObj(self.args,
                                id=i,
-                               # train_samples=len(train_data),
-                               # test_samples=len(test_data),
                                train_slow=train_slow,
                                send_slow=send_slow)
             self.clients.append(client)
@@ -110,45 +77,39 @@ class Server(object):
         self.send_slow_clients = self.select_slow_clients(
             self.send_slow_rate)
 
-    # def select_clients(self):
-    #     if self.random_join_ratio:
-    #         self.current_num_join_clients = \
-    #         np.random.choice(range(self.num_join_clients, self.num_clients + 1), 1, replace=False)[0]
-    #     else:
-    #         self.current_num_join_clients = self.num_join_clients
-    #     selected_clients = list(np.random.choice(self.clients, self.current_num_join_clients, replace=False))
-    #
-    #     return selected_clients
-
     def select_clients_id(self, other_info=None):
-        np.random.seed(other_info)
-        num_selected = max(int(self.join_ratio * self.num_clients), 1)
-        selected_clients_id = set(np.random.choice(np.arange(self.num_clients), num_selected, replace=False))
+        selected_clients_id = []
+        if self.client_selection_strategy == 'random':
+            np.random.seed(other_info)
+            num_selected = max(int(self.join_ratio * self.num_clients), 1)
+            selected_clients_id = set(np.random.choice(np.arange(self.num_clients), num_selected, replace=False))
+        else:
+            print("Please choose the correct federated learning client selection strategy.")
 
         return selected_clients_id
 
     def select_clients(self, other_info=None):
-        np.random.seed(other_info)
-        num_selected = max(int(self.join_ratio * self.num_clients), 1)
-        selected_clients = list(np.random.choice(self.clients, num_selected, replace=False))
+        selected_clients = []
+        if self.client_selection_strategy == 'random':
+            np.random.seed(other_info)
+            num_selected = max(int(self.join_ratio * self.num_clients), 1)
+            selected_clients = list(np.random.choice(self.clients, num_selected, replace=False))
+        else:
+            print("Please choose the correct federated learning client selection strategy.")
 
         return selected_clients
 
     def send_models(self):
         # TODO:需要所有的客户端都分发模型吗？
-
-        # assert (len(self.clients) > 0)
         assert (len(self.selected_clients) > 0)
 
-        # for client in self.clients:
         for client in self.selected_clients:
             start_time = time.time()
-
             client.set_model(self.model)
-
-            #意义不明
+            # 意义不明
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
+        print("Model distribution completed!")
 
     # def receive_models(self):
     #     assert (len(self.selected_clients) > 0)

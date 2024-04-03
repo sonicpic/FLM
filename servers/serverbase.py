@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import time
 
@@ -5,7 +7,7 @@ import time
 class Server(object):
     def __init__(self, args):
         self.args = args
-        self.model = args.model # 模型
+        self.model = copy.deepcopy(args.model) # 模型
 
         # 异质性模拟参数
         # self.time_threthold = args.time_threthold
@@ -101,16 +103,22 @@ class Server(object):
 
     def send_models(self):
         # TODO:需要所有的客户端都分发模型吗？
+        # 只向选中的客户端分发模型
         assert (len(self.selected_clients) > 0)
-
         for client in self.selected_clients:
             start_time = time.time()
             client.set_model(self.model)
-            client.set_args(self.prompter,self.train_on_inputs,self.tokenizer,self.cutoff_len)
             # 意义不明
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
         print("Model distribution completed!")
+
+    def send_args(self):
+        # 所有的客户端都分发
+        assert (len(self.clients) > 0)
+        for client in self.clients:
+            client.set_args(self.prompter,self.train_on_inputs,self.tokenizer,self.cutoff_len)
+        print("Args distribution completed!")
 
     # def receive_models(self):
     #     assert (len(self.selected_clients) > 0)

@@ -169,7 +169,7 @@ class Client(object):
         return result
 
     def set_model(self, model):
-        self.model = model
+        self.model = copy.deepcopy(model)
         
     def set_args(self,prompter,train_on_inputs,tokenizer,cutoff_len):
         self.prompter = prompter

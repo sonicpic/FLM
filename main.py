@@ -12,7 +12,7 @@ from peft import (
     prepare_model_for_int8_training,
 )
 
-from servers.serveravg import FedAvg
+from servers.serveravg import serverAVG
 from utils.prompter import Prompter
 
 if __name__ == '__main__':
@@ -127,8 +127,9 @@ if __name__ == '__main__':
     start = time.time()
     # 选择联邦学习算法
     if args.algorithm == "FedAvg":
-        # if True:
-        server = FedAvg(args)
+        server = serverAVG(args)
+    if args.algorithm == "scaffold":
+        server = serverAVG(args)
     else:
         print("Please choose the correct federated learning aggregation algorithm.")
 

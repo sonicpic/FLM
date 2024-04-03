@@ -5,14 +5,19 @@ import os
 from tqdm import tqdm  # 用于进度条展示
 import torch
 import time
-from utils.conversation import get_conv_template  # 导入对话模板工具
-from peft import PeftModel  # PEFT模型，可能是对模型进行参数效率调整的一种方法
 from transformers import AutoModelForCausalLM, AutoTokenizer  # 导入Hugging Face库中的模型和分词器
+from peft import (
+    LoraConfig,
+    get_peft_model,
+    prepare_model_for_int8_training,
+)
+from peft import set_peft_model_state_dict
 
 import sys
-import sys
+
 sys.path.append('/root/FLM')
 sys.path.append("../../")  # 添加路径以便可以导入其他模块
+from utils.conversation import get_conv_template  # 导入对话模板工具
 
 # 配置不同对话类型的温度参数，控制生成文本的随机性
 temperature_config = {
@@ -30,10 +35,15 @@ temperature_config = {
 # 设置命令行参数
 parser = argparse.ArgumentParser()
 parser.add_argument("--base_model_path", type=str, default='meta-llama/Llama-2-7b-hf')  # 基础模型路径
-parser.add_argument("--lora_path", type=str, default='')  # LORA优化路径
+parser.add_argument("--lora_path", type=str, default='../lora-shepherd/50')  # LORA优化路径
 parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
 parser.add_argument("--max_new_token", type=int, default=1024)  # 最大新生成token数量
 parser.add_argument("--num_choices", type=int, default=1)  # 生成答案的选项数量
+# LoRA超参数
+parser.add_argument("--lora_r", type=int, default=8,help="Rank of LoRA.")
+parser.add_argument("--lora_alpha", type=int, default=16,help="Alpha parameter for LoRA.")
+parser.add_argument("--lora_dropout", type=float, default=0.05,help="Dropout rate for LoRA.")
+parser.add_argument("--lora_target_modules", nargs='+', default=["q_proj"],help="Target modules for LoRA modifications.")
 args = parser.parse_args()
 
 # 根据模型路径提取模型名称，用于保存结果
@@ -57,8 +67,18 @@ answer_file = f"model_answer/{model_name}.jsonl"
 
 # 加载模型和分词器
 model = AutoModelForCausalLM.from_pretrained(args.base_model_path, torch_dtype=torch.float16).to('cuda')
-if args.lora_path:
-    model = PeftModel.from_pretrained(model, args.lora_path, torch_dtype=torch.float16)
+config = LoraConfig(
+    r=args.lora_r,
+    lora_alpha=args.lora_alpha,
+    target_modules=args.lora_target_modules,
+    lora_dropout=args.lora_dropout,
+    bias="none",
+    task_type="CAUSAL_LM",
+)
+model = get_peft_model(model, config)
+state_dict = torch.load("../lora-shepherd/50/1/adapter_model.bin")
+set_peft_model_state_dict(model, state_dict, "default")
+
 tokenizer = AutoTokenizer.from_pretrained(args.base_model_path)
 
 

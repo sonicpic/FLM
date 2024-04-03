@@ -63,6 +63,7 @@ class clientSCAFFOLD(Client):
             train_dataset=self.local_train_dataset,  # 训练数据集
             eval_dataset=self.local_val_dataset,    # 评估数据集
             # formatting_func=formatting_prompts_func,
+            formatting_func=self.formatting_prompts_func(),
             data_collator=transformers.DataCollatorForSeq2Seq(
                 tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True  # 数据整理器配置
             ),
@@ -86,6 +87,38 @@ class clientSCAFFOLD(Client):
     #
     # def set_auxiliary_delta_dict(self, auxiliary_delta_dict):
     #     self.auxiliary_delta_dict = auxiliary_delta_dict
+
+    def formatting_prompts_func(self,examples):
+        output_text = []
+        for i in range(len(examples["instruction"])):
+            instruction = examples["instruction"][i]
+            input_text = examples["input"][i]
+            response = examples["output"][i]
+
+            if len(input_text) >= 2:
+                text = f'''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+                ### Instruction:
+                {instruction}
+
+                ### Input:
+                {input_text}
+
+                ### Response:
+                {response}
+                '''
+            else:
+                text = f'''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+                ### Instruction:
+                {instruction}
+
+                ### Response:
+                {response}
+                '''
+            output_text.append(text)
+
+        return output_text
 
 
 class SFTTrainerSCAFFOLD(SFTTrainer):

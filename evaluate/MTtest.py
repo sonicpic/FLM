@@ -36,7 +36,8 @@ temperature_config = {
 parser = argparse.ArgumentParser()
 parser.add_argument("--base_model_path", type=str, default='meta-llama/Llama-2-7b-hf')  # 基础模型路径
 parser.add_argument("--lora_path", type=str, default='../lora-shepherd/50')  # LORA优化路径
-parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
+# parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
+parser.add_argument("--template", type=str, default="alpaca")  # 使用的对话模板
 parser.add_argument("--max_new_token", type=int, default=1024)  # 最大新生成token数量
 parser.add_argument("--num_choices", type=int, default=1)  # 生成答案的选项数量
 # LoRA超参数

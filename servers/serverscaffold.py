@@ -69,11 +69,13 @@ class serverSCAFFOLD(Server):
 
             print("Collecting the weights of clients and performing aggregation")
             self.model,self.global_auxiliary,self.global_dict = self.scaffold(self.model,
-                                       self.selected_clients,
-                                       self.output_dir,
-                                       self.local_dataset_len_dict,
-                                       round,
-                                       )
+                                                                              self.selected_clients,
+                                                                              self.output_dir,
+                                                                              self.local_dataset_len_dict,
+                                                                              round,
+                                                                              self.global_auxiliary,
+                                                                              self.auxiliary_delta_dict
+                                                                              )
             # self.model.save_model()
             # self.model.save_pretrained(os.path.join(self.output_dir, str(round)))
             torch.save(self.model.state_dict(), os.path.join(self.output_dir, str(round), "adapter_model.bin"))

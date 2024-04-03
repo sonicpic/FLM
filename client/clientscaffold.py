@@ -6,9 +6,10 @@ import time
 import transformers
 from peft import get_peft_model_state_dict, set_peft_model_state_dict
 from transformers import TrainerCallback
-from trl import SFTTrainer
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
 
 from client.clientbase import Client
+from templates.template import get_formatting_prompts_func
 
 
 class clientSCAFFOLD(Client):
@@ -55,18 +56,24 @@ class clientSCAFFOLD(Client):
             dataloader_drop_last=False  # 是否丢弃最后一个不完整的批次
         )
 
+        formatting_prompts_func, response_template = get_formatting_prompts_func('alpaca',tokenizer.eos_token)
+        response_template_ids = tokenizer.encode(response_template, add_special_tokens=False)[
+                                2:]  # Now we have it like in the dataset texts: `[2277, 29937, 4007, 22137, 29901]` for Llama2
+        data_collator = DataCollatorForCompletionOnlyLM(response_template_ids, tokenizer=tokenizer)
+
         self.local_trainer = SFTTrainerSCAFFOLD(
             model=self.model,  # 训练的模型
             tokenizer=tokenizer,
-            args=self.train_args,   # 训练参数
+            args=self.train_args,  # 训练参数
             max_seq_length=self.cutoff_len,
             train_dataset=self.local_train_dataset,  # 训练数据集
-            eval_dataset=self.local_val_dataset,    # 评估数据集
+            eval_dataset=self.local_val_dataset,  # 评估数据集
             # formatting_func=formatting_prompts_func,
-            formatting_func=self.formatting_prompts_func(),
-            data_collator=transformers.DataCollatorForSeq2Seq(
-                tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True  # 数据整理器配置
-            ),
+            formatting_func=formatting_prompts_func,
+            # data_collator=transformers.DataCollatorForSeq2Seq(
+            #     tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True  # 数据整理器配置
+            # ),
+            data_collator=data_collator,
             global_state=global_dict,
             local_auxiliary=auxiliary_model_list[self.id],
             global_auxiliary=global_auxiliary,
@@ -88,37 +95,38 @@ class clientSCAFFOLD(Client):
     # def set_auxiliary_delta_dict(self, auxiliary_delta_dict):
     #     self.auxiliary_delta_dict = auxiliary_delta_dict
 
-    def formatting_prompts_func(self,examples):
-        output_text = []
-        for i in range(len(examples["instruction"])):
-            instruction = examples["instruction"][i]
-            input_text = examples["input"][i]
-            response = examples["output"][i]
 
-            if len(input_text) >= 2:
-                text = f'''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-
-                ### Instruction:
-                {instruction}
-
-                ### Input:
-                {input_text}
-
-                ### Response:
-                {response}
-                '''
-            else:
-                text = f'''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-
-                ### Instruction:
-                {instruction}
-
-                ### Response:
-                {response}
-                '''
-            output_text.append(text)
-
-        return output_text
+# def formatting_prompts_func(examples):
+#     output_text = []
+#     for i in range(len(examples["instruction"])):
+#         instruction = examples["instruction"][i]
+#         input_text = examples["context"][i]
+#         response = examples["response"][i]
+#
+#         if len(input_text) >= 2:
+#             text = f'''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+#
+#             ### Instruction:
+#             {instruction}
+#
+#             ### Input:
+#             {input_text}
+#
+#             ### Response:
+#             {response}
+#             '''
+#         else:
+#             text = f'''Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+#
+#             ### Instruction:
+#             {instruction}
+#
+#             ### Response:
+#             {response}
+#             '''
+#         output_text.append(text)
+#
+#     return output_text
 
 
 class SFTTrainerSCAFFOLD(SFTTrainer):

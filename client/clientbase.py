@@ -123,7 +123,7 @@ class Client(object):
         previously_selected_clients_set = previously_selected_clients_set | set({self.id})
         last_client_id = self.id
 
-        del self.model
+        # del self.model
 
         return local_dataset_len_dict, previously_selected_clients_set, last_client_id
 
@@ -169,8 +169,10 @@ class Client(object):
         return result
 
     def set_model(self, model):
-        self.model = copy.deepcopy(model)
-        
+        # self.model = copy.deepcopy(model)
+        self.model = model
+
+
     def set_args(self,prompter,train_on_inputs,tokenizer,cutoff_len):
         self.prompter = prompter
         self.train_on_inputs = train_on_inputs

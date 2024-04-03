@@ -58,7 +58,7 @@ class serverSCAFFOLD(Server):
                 client.initiate_local_training()
 
                 print("Local training starts ... ")
-                client.train()
+                client.train_scaffold()
 
                 self.auxiliary_model_list[client.id], self.auxiliary_delta_dict[client.id] = client.local_trainer.get_auxiliary_param()
                 # self.local_dict_list[client.id] = copy.deepcopy(get_peft_model_state_dict(client.model))  # copy is needed!

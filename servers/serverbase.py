@@ -7,7 +7,9 @@ import time
 class Server(object):
     def __init__(self, args):
         self.args = args
-        self.model = copy.deepcopy(args.model) # 模型
+        # self.model = copy.deepcopy(args.model) # 模型
+        self.model = args.model # 模型
+
 
         # 异质性模拟参数
         # self.time_threthold = args.time_threthold

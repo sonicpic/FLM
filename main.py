@@ -13,6 +13,7 @@ from peft import (
 )
 
 from servers.serveravg import serverAVG
+from servers.serverscaffold import serverSCAFFOLD
 from utils.prompter import Prompter
 
 if __name__ == '__main__':
@@ -30,9 +31,9 @@ if __name__ == '__main__':
     # 联邦学习超参数
     parser.add_argument("--client_selection_strategy", type=str, default="random",
                         help="Strategy to select clients for federated learning.")
-    parser.add_argument("--client_selection_frac", type=float, default=0.1,
+    parser.add_argument("--client_selection_frac", type=float, default=0.04,
                         help="Fraction of clients to select in each round.")
-    parser.add_argument("--num_communication_rounds", type=int, default=5,
+    parser.add_argument("--num_communication_rounds", type=int, default=2,
                         help="Number of communication rounds in federated learning.")
     parser.add_argument("--num_clients", type=int, default=50,
                         help="Total number of clients.")
@@ -40,11 +41,11 @@ if __name__ == '__main__':
                         default='FedAvg',
                         help="federated learning aggregation algorithm.")
     # 本地训练超参数
-    parser.add_argument("--local_batch_size", type=int, default=32,
+    parser.add_argument("--local_batch_size", type=int, default=64,
                         help="Batch size for local training.")
     parser.add_argument("--local_micro_batch_size", type=int, default=8,
                         help="Micro batch size for local training.")
-    parser.add_argument("--local_num_epochs", type=int, default=10,
+    parser.add_argument("--local_num_epochs", type=int, default=2,
                         help="Number of epochs for local training.")
     parser.add_argument("--local_learning_rate", type=float, default=1.5e-4,
                         help="Learning rate for local training.")
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     if args.algorithm == "FedAvg":
         server = serverAVG(args)
     if args.algorithm == "scaffold":
-        server = serverAVG(args)
+        server = serverSCAFFOLD(args)
     else:
         print("Please choose the correct federated learning aggregation algorithm.")
 

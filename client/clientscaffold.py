@@ -72,6 +72,9 @@ class clientSCAFFOLD(Client):
         )
         self.local_trainer.add_callback(SCAFFOLD_Callback(self.local_trainer.correction, self.model))
 
+    def train_scaffold(self):
+        self.local_trainer.train()
+
     # def set_global_dict(self, global_dict):
     #     self.global_dict = global_dict
     #

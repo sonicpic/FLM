@@ -7,3 +7,6 @@ transformers==4.38.2
 bitsandbytes
 accelerate
 
+
+pandas~=2.2.1
+trl~=0.8.1

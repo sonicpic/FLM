@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument("--num_clients", type=int, default=50,
                         help="Total number of clients.")
     parser.add_argument("--algorithm", type=str,
-                        default='FedAvg',
+                        default='fedavg',
                         help="federated learning aggregation algorithm.")
     # 本地训练超参数
     parser.add_argument("--local_batch_size", type=int, default=64,
@@ -127,9 +127,11 @@ if __name__ == '__main__':
     time_list = []
     start = time.time()
     # 选择联邦学习算法
-    if args.algorithm == "FedAvg":
+    if args.algorithm == "fedavg":
         server = ServerAvg(args)
     if args.algorithm == "scaffold":
+        server = ServerScaffold(args)
+    if args.algorithm == "fedprox":
         server = ServerScaffold(args)
     else:
         print("Please choose the correct federated learning aggregation algorithm.")

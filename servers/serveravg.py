@@ -5,19 +5,19 @@ import torch
 from peft import set_peft_model_state_dict
 from tqdm import tqdm
 
-from client.clientavg import clientAVG
+from client.clientavg import ClientAvg
 from servers.serverbase import Server
 
 from torch.nn.functional import normalize
 
 
-class serverAVG(Server):
+class ServerAvg(Server):
     def __init__(self, args):
         super().__init__(args)
 
         # 初始化客户端（不分发模型）
         self.set_slow_clients()
-        self.set_clients(clientAVG)
+        self.set_clients(ClientAvg)
 
         print(f"\nJoin ratio / total clients: {self.join_ratio} / {self.num_clients}")
         print("Finished creating server and clients.")

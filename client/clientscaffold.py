@@ -10,7 +10,7 @@ from transformers import TrainerCallback
 from client.clientbase import Client
 
 
-class clientSCAFFOLD(Client):
+class ClientScaffold(Client):
     def __init__(self, args, id, **kwargs):
         super().__init__(args, id, **kwargs)
 
@@ -53,7 +53,7 @@ class clientSCAFFOLD(Client):
             group_by_length=group_by_length,
             dataloader_drop_last=False  # 是否丢弃最后一个不完整的批次
         )
-        self.local_trainer = SFTTrainerSCAFFOLD(
+        self.local_trainer = TrainerScaffold(
             model=self.model,  # 训练的模型
             train_dataset=self.local_train_dataset,  # 训练数据集
             eval_dataset=self.local_val_dataset,  # 评估数据集
@@ -71,9 +71,9 @@ class clientSCAFFOLD(Client):
         self.local_trainer.train()
 
 
-class SFTTrainerSCAFFOLD(transformers.Trainer):
+class TrainerScaffold(transformers.Trainer):
     def __init__(self, global_state, local_auxiliary, global_auxiliary, **kwargs):
-        super(SFTTrainerSCAFFOLD, self).__init__(**kwargs)
+        super(TrainerScaffold, self).__init__(**kwargs)
         self.global_state = global_state
         self.local_auxiliary = local_auxiliary
         self.global_auxiliary = global_auxiliary

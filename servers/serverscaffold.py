@@ -7,17 +7,17 @@ from peft import set_peft_model_state_dict, get_peft_model_state_dict
 from tqdm import tqdm
 
 # from client.clientscaffold_old import clientSCAFFOLD
-from client.clientscaffold import clientSCAFFOLD
+from client.clientscaffold import ClientScaffold
 from servers.serverbase import Server
 
 
-class serverSCAFFOLD(Server):
+class ServerScaffold(Server):
     def __init__(self, args):
         super().__init__(args)
 
         # 初始化客户端（不分发模型）
         self.set_slow_clients()
-        self.set_clients(clientSCAFFOLD)
+        self.set_clients(ClientScaffold)
         self.global_dict = copy.deepcopy(get_peft_model_state_dict(args.model))
         self.local_dict_list = [copy.deepcopy(self.global_dict) for i in range(self.num_clients)]
         self.global_auxiliary, self.auxiliary_model_list, self.auxiliary_delta_dict = self.get_auxiliary_dict(

@@ -1,6 +1,3 @@
-"""
-To support TRL supervised fine-tuning. Right now, we need to manually set the template here.
-"""
 
 alpaca_template = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 

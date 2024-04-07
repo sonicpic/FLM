@@ -102,11 +102,13 @@ class Server(object):
             num_selected = max(int(self.join_ratio * self.num_clients), 1)
             selected_clients = list(np.random.choice(self.clients, num_selected, replace=False))
         if self.client_selection_strategy == 'kcenter':
-            weights = []
+            weights = [None] * self.num_clients  # 使用None填充列表
+            self.clients.clear()
             self.set_clients(ClientAvg)
-            self.send_models()
-            self.send_args()
+
             for client in self.clients:
+                client.set_model(self.model)
+                client.set_args(self.prompter,self.train_on_inputs,self.tokenizer,self.cutoff_len)
                 client.preprare_local_dataset(self.local_val_set_size)
                 client.build_local_trainer(self.tokenizer,
                                            self.local_micro_batch_size,
@@ -125,7 +127,10 @@ class Server(object):
                 print("\nTerminating the local training of Client_{}".format(client.id))
                 weight = client.terminate_local_training_no_save()
                 weights[client.id] = weight
+                print(weight)
+                print(flatten_weights(weight))
             weights = [flatten_weights(weight) for weight in weights]
+            print(weights)
 
         else:
             print("Please choose the correct federated learning client selection strategy.")

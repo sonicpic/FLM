@@ -6,8 +6,8 @@ import torch
 from peft import set_peft_model_state_dict, get_peft_model_state_dict
 from tqdm import tqdm
 
-from client.clientscaffold_old import clientSCAFFOLD
-# from client.clientscaffold import clientSCAFFOLD
+# from client.clientscaffold_old import clientSCAFFOLD
+from client.clientscaffold import clientSCAFFOLD
 from servers.serverbase import Server
 
 

@@ -105,7 +105,6 @@ class SCAFFOLD_Callback(TrainerCallback):
 
 
     def on_step_end(self, args, state, control, **kwargs):
-        a = 1 / 0
         model_para = copy.deepcopy(get_peft_model_state_dict(self.model))
         for name in model_para.keys():
             model_para[name] -= args.learning_rate * self.correction[name]

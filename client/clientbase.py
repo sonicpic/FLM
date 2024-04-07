@@ -141,6 +141,17 @@ class Client(object):
 
         return local_dataset_len_dict, previously_selected_clients_set, last_client_id
 
+    def terminate_local_training_no_save(self):
+
+        new_adapter_weight = self.model.state_dict()  # 权重
+
+        older_adapter_weight = get_peft_model_state_dict(self.model, self.params_dict_old, "default")
+        set_peft_model_state_dict(self.model, older_adapter_weight, "default")
+
+        # del self.model
+
+        return new_adapter_weight
+
     def generate_and_tokenize_prompt(self, data_point):
         full_prompt = self.prompter.generate_prompt(
             data_point["instruction"],

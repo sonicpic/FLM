@@ -3,6 +3,9 @@ import copy
 import numpy as np
 import time
 
+from client.clientavg import ClientAvg
+from utils.data_utils import flatten_weights
+
 
 class Server(object):
     def __init__(self, args):
@@ -98,6 +101,32 @@ class Server(object):
             np.random.seed(other_info)
             num_selected = max(int(self.join_ratio * self.num_clients), 1)
             selected_clients = list(np.random.choice(self.clients, num_selected, replace=False))
+        if self.client_selection_strategy == 'kcenter':
+            weights = []
+            self.set_clients(ClientAvg)
+            self.send_models()
+            self.send_args()
+            for client in self.clients:
+                client.preprare_local_dataset(self.local_val_set_size)
+                client.build_local_trainer(self.tokenizer,
+                                           self.local_micro_batch_size,
+                                           self.gradient_accumulation_steps,
+                                           1,#训练轮数
+                                           self.local_learning_rate,
+                                           self.group_by_length,
+                                           self.ddp)
+
+                print("Initiating the local training of Client_{}".format(client.id))
+                client.initiate_local_training()
+
+                print("Local training starts ... ")
+                client.train()
+
+                print("\nTerminating the local training of Client_{}".format(client.id))
+                weight = client.terminate_local_training_no_save()
+                weights[client.id] = weight
+            weights = [flatten_weights(weight) for weight in weights]
+
         else:
             print("Please choose the correct federated learning client selection strategy.")
 

@@ -53,6 +53,20 @@ class Client(object):
         else:
             self.local_train_dataset = self.local_data["train"].shuffle().map(self.generate_and_tokenize_prompt)
             self.local_val_dataset = None
+            # print("local_train_dataset")
+            # print(self.local_train_dataset)
+            # print(self.local_train_dataset["instruction"])
+            # print(self.local_train_dataset["response"])
+            # print(self.local_train_dataset["category"])
+            # print("context")
+            # print(self.local_train_dataset["context"])
+            # print("input_ids")
+            # print(self.local_train_dataset["input_ids"])
+            # print("attention_mask")
+            # print(self.local_train_dataset["attention_mask"])
+            # print("labels")
+            # print(self.local_train_dataset["labels"])
+
         self.local_val_set_size = local_val_set_size
 
     # 配置和初始化用于训练模型的Trainer对象
@@ -133,6 +147,8 @@ class Client(object):
             data_point["context"],
             data_point["response"],
         )
+        # print("full_prompt")
+        # print(full_prompt)
         tokenized_full_prompt = self.tokenize(full_prompt)
         if not self.train_on_inputs:
             user_prompt = self.prompter.generate_prompt(

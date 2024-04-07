@@ -25,6 +25,8 @@ def get_formatting_prompts_func(template_name, eos_token):
         for i in range(len(example['instruction'])):
             text = overall_temp.format(example['instruction'][i], example['response'][i], eos_token)
             output_texts.append(text)
+            # print("output_texts")
+            # print(output_texts)
         return output_texts
 
     return formatting_prompts_func, response_temp

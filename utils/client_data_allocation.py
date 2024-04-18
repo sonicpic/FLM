@@ -12,8 +12,8 @@ import pdb
 num_clients = 50
 diff_quantity = 1
 
-np.random.seed(42)
-random.seed(42)
+np.random.seed(1114)
+random.seed(1114)
 
 # Divide the entire dataset into a training set and a test set.
 

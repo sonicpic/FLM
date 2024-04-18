@@ -123,6 +123,11 @@ if __name__ == '__main__':
     model = get_peft_model(model, args.config)
     args.model = model
 
+    print("LoRA_model_load")
+    # 打印模型的结构和每一层的数据类型
+    for name, parameter in model.named_parameters():
+        print(f"Layer Name: {name} | Size: {parameter.size()} | Data Type: {parameter.dtype}")
+
     # 准备训练
     print("The process of federated instruction-tuning has started..")
     time_list = []

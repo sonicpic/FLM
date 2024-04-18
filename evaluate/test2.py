@@ -68,17 +68,17 @@ def test2():
     final_vectors = [[vector[cat] for cat in category_list] for vector in all_vectors]
 
     # 执行k-means聚类
-    # kmeans = KMeans(n_clusters=5, random_state=0)
-    # kmeans.fit(final_vectors)
-    # labels = kmeans.labels_
+    kmeans = KMeans(n_clusters=5, random_state=0)
+    kmeans.fit(final_vectors)
+    labels = kmeans.labels_
 
     #谱聚类
     # spectral = SpectralClustering(n_clusters=10, random_state=0, affinity='nearest_neighbors')
     # labels = spectral.fit_predict(final_vectors)
 
     # 进行DBSCAN聚类
-    dbscan = DBSCAN(eps=0.5, min_samples=5)  # 这里的eps和min_samples根据数据调整
-    labels = dbscan.fit_predict(final_vectors)
+    # dbscan = DBSCAN(eps=0.5, min_samples=5)  # 这里的eps和min_samples根据数据调整
+    # labels = dbscan.fit_predict(final_vectors)
 
 
     # 打印所有向量和对应的类别

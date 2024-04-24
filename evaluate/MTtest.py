@@ -109,12 +109,20 @@ for question in tqdm(questions):
     for i in range(args.num_choices):
         torch.manual_seed(i)  # 设置随机种子以确保可复现性
         conv = get_conv_template(args.template)  # 获取对话模板
+        print("======conv======")
+        print(conv)
         turns = []
         for j in range(len(question["turns"])):
             qs = question["turns"][j]
+            print("======qs======")
+            print(qs)
             conv.append_message(conv.roles[0], qs)  # 添加问题到对话
             conv.append_message(conv.roles[1], None)  # 准备生成回答
             prompt = conv.get_prompt()  # 获取完整的对话提示
+            print("======conv======")
+            print(conv)
+            print("======prompt======")
+            print(prompt)
             input_ids = tokenizer([prompt]).input_ids  # 编码对话提示
 
             if temperature < 1e-4:
@@ -136,6 +144,8 @@ for question in tqdm(questions):
                     output_ids = output_ids[0][len(input_ids[0]):]
                 output = tokenizer.decode(output_ids, spaces_between_special_tokens=False)
                 output = output.strip()
+                print("======decode output======")
+                print(output)
             except RuntimeError as e:
                 print("ERROR question ID: ", question["question_id"])
                 output = "ERROR"

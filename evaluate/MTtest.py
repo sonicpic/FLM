@@ -1,4 +1,5 @@
 # 导入必要的库
+from datetime import datetime
 import json
 import argparse
 import os
@@ -35,7 +36,7 @@ temperature_config = {
 # 设置命令行参数
 parser = argparse.ArgumentParser()
 parser.add_argument("--base_model_path", type=str, default='meta-llama/Llama-2-7b-hf')  # 基础模型路径
-parser.add_argument("--lora_path", type=str, default='../lora-shepherd/50')  # LORA优化路径
+parser.add_argument("--lora_path", type=str, default='../lora-shepherd/100')  # LORA优化路径
 # parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
 parser.add_argument("--template", type=str, default="alpaca")  # 使用的对话模板
 parser.add_argument("--max_new_token", type=int, default=1024)  # 最大新生成token数量
@@ -62,9 +63,13 @@ else:
     else:
         model_name = last_str
 
+# 获取当前日期和时间
+current_time = datetime.now()
+# 将日期和时间格式化为字符串（例如 "20230424_153045"）
+formatted_time = current_time.strftime("%Y%m%d_%H%M%S")
 # 设置问题和答案文件的路径
 question_file = f"question.jsonl"
-answer_file = f"model_answer/{model_name}.jsonl"
+answer_file = f"model_answer/{model_name}_{formatted_time}.jsonl"
 
 # 加载模型和分词器
 model = AutoModelForCausalLM.from_pretrained(args.base_model_path, torch_dtype=torch.float16).to('cuda')
@@ -77,9 +82,9 @@ config = LoraConfig(
     task_type="CAUSAL_LM",
 )
 model = get_peft_model(model, config)
-state_dict = torch.load("../lora-shepherd/50/1/adapter_model.bin")
+# state_dict = torch.load("../lora-shepherd/50/1/adapter_model.bin")
+state_dict = torch.load(os.path.join(args.lora_path, '0/adapter_model.bin'))
 set_peft_model_state_dict(model, state_dict, "default")
-
 tokenizer = AutoTokenizer.from_pretrained(args.base_model_path)
 
 

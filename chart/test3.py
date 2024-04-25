@@ -2,8 +2,8 @@ from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, v
 import sys
 sys.path.append('/root/FLM')
 sys.path.append("../../")  # 添加路径以便可以导入其他模块
-from evaluate.test import test
-from evaluate.test2 import test2
+from chart.test import test
+from chart.test2 import test2
 
 # 假设 labels_true 是根据数据集中的指令类型进行聚类得到的真实标签
 # 假设 labels_pred 是根据模型权重聚类得到的预测标签

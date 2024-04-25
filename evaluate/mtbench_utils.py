@@ -165,7 +165,7 @@ def run_judge_single(question, answer, judge, ref_answer, multi_turn=False):
     conv.append_message(conv.roles[0], user_prompt)
     conv.append_message(conv.roles[1], None)
 
-    if model in ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]:
+    if model in ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview","gpt-4-turbo-preview"]:
         judgment = chat_compeletion_openai(model, conv, temperature=0, max_tokens=2048)
     else:
         raise ValueError(f"Invalid judge model name: {model}")
@@ -407,7 +407,7 @@ def chat_compeletion_openai(model, conv, temperature, max_tokens):
             #     temperature=temperature,
             #     max_tokens=max_tokens,
             # )
-            api_key = "sk-7tUC8cSsYBl4MQap5aA8B83fAfB34dF187CaCbD596FcA9D6"
+            api_key = "sk-D4WT1agyNi6xDAbZE504Ff2246Bc4e16Bb854eF6FaF26e70"
             api_base = "https://open.api.gu28.top/v1"
             client = OpenAI(api_key=api_key, base_url=api_base)
             response = client.chat.completions.create(
@@ -417,11 +417,10 @@ def chat_compeletion_openai(model, conv, temperature, max_tokens):
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
-            print(response.choices[0].message)
-
-            output = response["choices"][0]["message"]["content"]
+            print(response)
+            output = response.choices[0].message.content
             break
-        except openai.error.OpenAIError as e:
+        except BaseException as e:
             print(type(e), e)
             time.sleep(API_RETRY_SLEEP)
 

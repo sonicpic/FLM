@@ -85,8 +85,8 @@ if __name__ == '__main__':
     # 根据客户端数量确定输入输出路径
     args.data_path = os.path.join(args.data_path, str(args.num_clients))
     args.output_dir = os.path.join(args.output_dir, str(args.num_clients))
-    print(args.data_path)
-    print(args.output_dir)
+    # print(args.data_path)
+    # print(args.output_dir)
 
     # set up the global model & toknizer
     args.gradient_accumulation_steps = args.local_batch_size // args.local_micro_batch_size  # 执行一次梯度更新前需要累积的微批次的数量
@@ -123,10 +123,10 @@ if __name__ == '__main__':
     model = get_peft_model(model, args.config)
     args.model = model
 
-    print("LoRA_model_load")
-    # 打印模型的结构和每一层的数据类型
-    for name, parameter in model.named_parameters():
-        print(f"Layer Name: {name} | Size: {parameter.size()} | Data Type: {parameter.dtype}")
+    # print("LoRA_model_load")
+    # # 打印模型的结构和每一层的数据类型
+    # for name, parameter in model.named_parameters():
+    #     print(f"Layer Name: {name} | Size: {parameter.size()} | Data Type: {parameter.dtype}")
 
     # 准备训练
     print("The process of federated instruction-tuning has started..")

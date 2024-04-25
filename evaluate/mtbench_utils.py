@@ -18,7 +18,7 @@ import anthropic
 import sys
 
 from openai import OpenAI
-
+sys.path.append('/root/FLM')
 sys.path.append("../../")
 from utils.conversation import get_conv_template
 

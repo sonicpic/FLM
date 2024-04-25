@@ -176,7 +176,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--judge_file",
         type=str,
-        default="data/judge_prompts.jsonl",
+        default="judge_prompts.jsonl",
         help="The file of judge prompts.",
     )
     parser.add_argument("--judge_model", type=str, default="gpt-4-1106-preview")
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         judges = make_judge_pairwise(args.judge_model, judge_prompts)
         play_a_match_func = play_a_match_pair
         output_file = (
-            f"data/mtbench/model_judgment/{args.judge_model}_pair.jsonl"
+            f"mtbench/model_judgment/{args.judge_model}_pair.jsonl"
         )
         if args.mode == "pairwise-all":
             make_match_func = make_match_all_pairs

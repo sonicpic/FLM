@@ -180,6 +180,7 @@ if __name__ == "__main__":
         help="The file of judge prompts.",
     )
     parser.add_argument("--judge_model", type=str, default="gpt-4-turbo-preview")
+    # parser.add_argument("--judge_model", type=str, default="gpt-4-1106-preview")
     parser.add_argument("--baseline_model", type=str, default="gpt-3.5-turbo")
     parser.add_argument(
         "--mode",

@@ -407,7 +407,8 @@ def chat_compeletion_openai(model, conv, temperature, max_tokens):
             #     temperature=temperature,
             #     max_tokens=max_tokens,
             # )
-            api_key = "sk-D4WT1agyNi6xDAbZE504Ff2246Bc4e16Bb854eF6FaF26e70"
+            # api_key = "sk-D4WT1agyNi6xDAbZE504Ff2246Bc4e16Bb854eF6FaF26e70"
+            api_key = "sk-7tUC8cSsYBl4MQap5aA8B83fAfB34dF187CaCbD596FcA9D6"
             api_base = "https://open.api.gu28.top/v1"
             client = OpenAI(api_key=api_key, base_url=api_base)
             response = client.chat.completions.create(

@@ -16,6 +16,9 @@ import openai
 import anthropic
 
 import sys
+
+from openai import OpenAI
+
 sys.path.append("../../")
 from utils.conversation import get_conv_template
 
@@ -397,13 +400,25 @@ def chat_compeletion_openai(model, conv, temperature, max_tokens):
     for _ in range(API_MAX_RETRY):
         try:
             messages = conv.to_openai_api_messages()
-            response = openai.ChatCompletion.create(
+            # response = openai.ChatCompletion.create(
+            #     model=model,
+            #     messages=messages,
+            #     n=1,
+            #     temperature=temperature,
+            #     max_tokens=max_tokens,
+            # )
+            api_key = "sk-7tUC8cSsYBl4MQap5aA8B83fAfB34dF187CaCbD596FcA9D6"
+            api_base = "https://open.api.gu28.top/v1"
+            client = OpenAI(api_key=api_key, base_url=api_base)
+            response = client.chat.completions.create(
                 model=model,
                 messages=messages,
                 n=1,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
+            print(response.choices[0].message)
+
             output = response["choices"][0]["message"]["content"]
             break
         except openai.error.OpenAIError as e:
@@ -413,54 +428,67 @@ def chat_compeletion_openai(model, conv, temperature, max_tokens):
     return output
 
 
-def chat_compeletion_openai_azure(model, conv, temperature, max_tokens):
-    openai.api_type = "azure"
-    openai.api_base = os.environ["AZURE_OPENAI_ENDPOINT"]
-    openai.api_key = os.environ["AZURE_OPENAI_KEY"]
-    openai.api_version = "2023-05-15"
-
-    if "azure-" in model:
-        model = model[6:]
-
-    output = API_ERROR_OUTPUT
-    for _ in range(API_MAX_RETRY):
-        try:
-            messages = conv.to_openai_api_messages()
-            response = openai.ChatCompletion.create(
-                engine=model,
-                messages=messages,
-                n=1,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            output = response["choices"][0]["message"]["content"]
-            break
-        except openai.error.OpenAIError as e:
-            print(type(e), e)
-            time.sleep(API_RETRY_SLEEP)
-
-    return output
 
 
-def chat_compeletion_anthropic(model, conv, temperature, max_tokens):
-    output = API_ERROR_OUTPUT
-    for _ in range(API_MAX_RETRY):
-        try:
-            c = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-            prompt = conv.get_prompt()
-            response = c.completions.create(
-                model=model,
-                prompt=prompt,
-                stop_sequences=[anthropic.HUMAN_PROMPT],
-                max_tokens_to_sample=max_tokens,
-                temperature=temperature,
-            )
-            output = response.completion
-            break
-        except anthropic.APIError as e:
-            print(type(e), e)
-            time.sleep(API_RETRY_SLEEP)
-    return output.strip()
+# def chat_compeletion_openai_azure(model, conv, temperature, max_tokens):
+#     openai.api_type = "azure"
+#     openai.api_base = os.environ["AZURE_OPENAI_ENDPOINT"]
+#     openai.api_key = os.environ["AZURE_OPENAI_KEY"]
+#     openai.api_version = "2023-05-15"
+#
+#     if "azure-" in model:
+#         model = model[6:]
+#
+#     output = API_ERROR_OUTPUT
+#     for _ in range(API_MAX_RETRY):
+#         try:
+#             messages = conv.to_openai_api_messages()
+#             # response = openai.ChatCompletion.create(
+#             #     engine=model,
+#             #     messages=messages,
+#             #     n=1,
+#             #     temperature=temperature,
+#             #     max_tokens=max_tokens,
+#             # )
+#             api_key = "sk-7tUC8cSsYBl4MQap5aA8B83fAfB34dF187CaCbD596FcA9D6"
+#             api_base = "https://open.api.gu28.top/v1"
+#             client = OpenAI(api_key=api_key, base_url=api_base)
+#             response = client.chat.completions.create(
+#                 engine=model,
+#                 messages=messages,
+#                 n=1,
+#                 temperature=temperature,
+#                 max_tokens=max_tokens,
+#             )
+#             print(response.choices[0].message)
+#             output = response["choices"][0]["message"]["content"]
+#             break
+#         except openai.error.OpenAIError as e:
+#             print(type(e), e)
+#             time.sleep(API_RETRY_SLEEP)
+#
+#     return output
+
+
+# def chat_compeletion_anthropic(model, conv, temperature, max_tokens):
+#     output = API_ERROR_OUTPUT
+#     for _ in range(API_MAX_RETRY):
+#         try:
+#             c = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+#             prompt = conv.get_prompt()
+#             response = c.completions.create(
+#                 model=model,
+#                 prompt=prompt,
+#                 stop_sequences=[anthropic.HUMAN_PROMPT],
+#                 max_tokens_to_sample=max_tokens,
+#                 temperature=temperature,
+#             )
+#             output = response.completion
+#             break
+#         except anthropic.APIError as e:
+#             print(type(e), e)
+#             time.sleep(API_RETRY_SLEEP)
+#     return output.strip()
 
 def normalize_game_key_single(gamekey, result):
     """Make the model names sorted in a game key."""

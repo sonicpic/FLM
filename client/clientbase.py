@@ -19,7 +19,7 @@ class Client(object):
     def __init__(self, args, id, **kwargs):
         self.cutoff_len = None
         self.tokenizer = None
-        self.train_on_inputs = None
+        self.train_on_inputs = False
         self.prompter = None
         self.model = None  # 模型等服务器统一分发
         self.id = id  # 客户端ID

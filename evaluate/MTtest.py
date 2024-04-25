@@ -39,13 +39,8 @@ parser.add_argument("--base_model_path", type=str, default='meta-llama/Llama-2-7
 parser.add_argument("--lora_path", type=str, default='../lora-shepherd/100')  # LORA优化路径
 # parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
 parser.add_argument("--template", type=str, default="alpaca")  # 使用的对话模板
-parser.add_argument("--max_new_token", type=int, default=1024)  # 最大新生成token数量
+parser.add_argument("--max_new_token", type=int, default=512)  # 最大新生成token数量
 parser.add_argument("--num_choices", type=int, default=1)  # 生成答案的选项数量
-# LoRA超参数
-parser.add_argument("--lora_r", type=int, default=8,help="Rank of LoRA.")
-parser.add_argument("--lora_alpha", type=int, default=16,help="Alpha parameter for LoRA.")
-parser.add_argument("--lora_dropout", type=float, default=0.05,help="Dropout rate for LoRA.")
-parser.add_argument("--lora_target_modules", nargs='+', default=["q_proj"],help="Target modules for LoRA modifications.")
 args = parser.parse_args()
 
 # 根据模型路径提取模型名称，用于保存结果
@@ -73,17 +68,11 @@ answer_file = f"model_answer/{model_name}_{formatted_time}.jsonl"
 
 # 加载模型和分词器
 model = AutoModelForCausalLM.from_pretrained(args.base_model_path, torch_dtype=torch.float16).to('cuda')
-config = LoraConfig(
-    r=args.lora_r,
-    lora_alpha=args.lora_alpha,
-    target_modules=args.lora_target_modules,
-    lora_dropout=args.lora_dropout,
-    bias="none",
-    task_type="CAUSAL_LM",
-)
+config = LoraConfig.from_pretrained(args.lora_path)
+print("====LoRA Config====")
+print(config)
 model = get_peft_model(model, config)
-# state_dict = torch.load("../lora-shepherd/50/1/adapter_model.bin")
-state_dict = torch.load(os.path.join(args.lora_path, '0/adapter_model.bin'))
+state_dict = torch.load(os.path.join(args.lora_path, '19/adapter_model.bin'))
 set_peft_model_state_dict(model, state_dict, "default")
 tokenizer = AutoTokenizer.from_pretrained(args.base_model_path)
 
@@ -112,7 +101,7 @@ for question in tqdm(questions):
     choices = []
 
     for i in range(args.num_choices):
-        torch.manual_seed(i)  # 设置随机种子以确保可复现性
+        # torch.manual_seed(i)  # 设置随机种子以确保可复现性
         conv = get_conv_template(args.template)  # 获取对话模板
         print("======conv======")
         print(conv)

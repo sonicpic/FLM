@@ -149,12 +149,12 @@ class Server(object):
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
         print("Model distribution completed!")
 
-    def send_args(self):
-        # 所有的客户端都分发
-        assert (len(self.clients) > 0)
-        for client in self.clients:
-            client.set_args(self.prompter,self.train_on_inputs,self.tokenizer,self.cutoff_len)
-        print("Args distribution completed!")
+    # def send_args(self):
+    #     # 所有的客户端都分发
+    #     assert (len(self.clients) > 0)
+    #     for client in self.clients:
+    #         client.set_args(self.prompter,self.train_on_inputs,self.tokenizer,self.cutoff_len)
+    #     print("Args distribution completed!")
 
     # def receive_models(self):
     #     assert (len(self.selected_clients) > 0)

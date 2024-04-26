@@ -27,7 +27,7 @@ if __name__ == '__main__':
                         help="Pretrained global model identifier.")
     parser.add_argument("--data_path", type=str, default='./data',
                         help="Path to the data directory.")
-    parser.add_argument("--output_dir", type=str, default='./lora-shepherd/',
+    parser.add_argument("--output_dir", type=str, default='./output/',
                         help="Output directory for finetuned models.")
     # 联邦学习超参数
     parser.add_argument("--client_selection_strategy", type=str, default="random",

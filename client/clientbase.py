@@ -17,10 +17,11 @@ from peft import (
 class Client(object):
 
     def __init__(self, args, id, **kwargs):
-        self.cutoff_len = None
-        self.tokenizer = None
-        self.train_on_inputs = False
-        self.prompter = None
+        self.cutoff_len = args.cutoff_len
+        self.tokenizer = args.tokenizer
+        # self.train_on_inputs = True #True在训练集上训练
+        self.train_on_inputs = args.train_on_inputs
+        self.prompter = args.prompter
         self.model = None  # 模型等服务器统一分发
         self.id = id  # 客户端ID
         self.local_data_path = os.path.join(args.data_path, "local_training_{}.json".format(self.id))
@@ -161,7 +162,8 @@ class Client(object):
         # print("full_prompt")
         # print(full_prompt)
         tokenized_full_prompt = self.tokenize(full_prompt)
-        if not self.train_on_inputs:
+        if self.train_on_inputs == False:
+            print("train_on_inputs == False")
             user_prompt = self.prompter.generate_prompt(
                 data_point["instruction"], data_point["context"]
             )
@@ -200,8 +202,8 @@ class Client(object):
         self.model = model
 
 
-    def set_args(self,prompter,train_on_inputs,tokenizer,cutoff_len):
-        self.prompter = prompter
-        self.train_on_inputs = train_on_inputs
-        self.tokenizer = tokenizer
-        self.cutoff_len = cutoff_len
+    # def set_args(self,prompter,train_on_inputs,tokenizer,cutoff_len):
+    #     self.prompter = prompter
+    #     # self.train_on_inputs = train_on_inputs
+    #     self.tokenizer = tokenizer
+    #     self.cutoff_len = cutoff_len

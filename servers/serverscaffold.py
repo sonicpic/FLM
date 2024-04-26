@@ -36,7 +36,7 @@ class ServerScaffold(Server):
             # self.selected_clients = self.select_clients_id()#这里拿到的是一个数组
             self.selected_clients = self.select_clients()  # 这里拿到的是一个client列表
             self.send_models()
-            self.send_args()
+            # self.send_args()
             # self.send_auxiliary_args()
 
             for client in self.selected_clients:

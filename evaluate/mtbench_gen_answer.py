@@ -36,7 +36,7 @@ temperature_config = {
 # 设置命令行参数
 parser = argparse.ArgumentParser()
 parser.add_argument("--base_model_path", type=str, default='meta-llama/Llama-2-7b-hf')  # 基础模型路径
-parser.add_argument("--lora_path", type=str, default='../output/100')  # LORA优化路径
+parser.add_argument("--lora_path", type=str, default=None)  # LORA优化路径
 parser.add_argument("--round", type=str, default='19')  # 最大训练轮数-1（用于获取最新轮的模型）
 # parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
 parser.add_argument("--template", type=str, default="alpaca")  # 使用的对话模板
@@ -59,7 +59,8 @@ question_file = f"question.jsonl"
 if args.lora_path:
     pre_str, checkpoint_str = os.path.split(args.lora_path)
     _, exp_name = os.path.split(pre_str)
-    checkpoint_id = checkpoint_str.split("-")[-1]
+    # checkpoint_id = checkpoint_str.split("-")[-1]
+    checkpoint_id = checkpoint_str
     model_name = f"{exp_name}_{checkpoint_id}"
     answer_file = f"model_answer/{model_name}.jsonl"
 else:
@@ -77,12 +78,13 @@ else:
 
 # 加载模型和分词器
 model = AutoModelForCausalLM.from_pretrained(args.base_model_path, torch_dtype=torch.float16).to('cuda')
-config = LoraConfig.from_pretrained(args.lora_path)
-print("====LoRA Config====")
-print(config)
-model = get_peft_model(model, config)
-state_dict = torch.load(os.path.join(args.lora_path, args.round, 'adapter_model.bin'))
-set_peft_model_state_dict(model, state_dict, "default")
+if args.lora_path:
+    config = LoraConfig.from_pretrained(args.lora_path)
+    print("====LoRA Config====")
+    print(config)
+    model = get_peft_model(model, config)
+    state_dict = torch.load(os.path.join(args.lora_path, args.round, 'adapter_model.bin'))
+    set_peft_model_state_dict(model, state_dict, "default")
 tokenizer = AutoTokenizer.from_pretrained(args.base_model_path)
 
 

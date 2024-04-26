@@ -14,6 +14,7 @@ from peft import (
 )
 
 from servers.serveravg import ServerAvg
+from servers.serverlocal import ServerLocal
 from servers.serverprox import ServerProx
 from servers.serverscaffold import ServerScaffold
 from utils.prompter import Prompter
@@ -162,6 +163,8 @@ if __name__ == '__main__':
         server = ServerScaffold(args)
     elif args.algorithm == "fedprox":
         server = ServerProx(args)
+    elif args.algorithm == "local":
+        server = ServerLocal(args)
     else:
         print("Please choose the correct federated learning aggregation algorithm.")
 

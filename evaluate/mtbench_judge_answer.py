@@ -235,11 +235,13 @@ if __name__ == "__main__":
     else:
         models = args.model_list
 
+    args.model_name = args.model_list[0]
+
     if args.mode == "single":
         judges = make_judge_single(args.judge_model, judge_prompts)
         play_a_match_func = play_a_match_single
         output_file = (
-            f"model_judgment/{args.model_list}_single.jsonl"
+            f"model_judgment/{args.model_name}_single.jsonl"
         )
         make_match_func = make_match_single
         baseline_model = None
@@ -247,7 +249,7 @@ if __name__ == "__main__":
         judges = make_judge_pairwise(args.judge_model, judge_prompts)
         play_a_match_func = play_a_match_pair
         output_file = (
-            f"model_judgment/{args.model_list}_pair.jsonl"
+            f"model_judgment/{args.model_name}_pair.jsonl"
         )
         if args.mode == "pairwise-all":
             make_match_func = make_match_all_pairs

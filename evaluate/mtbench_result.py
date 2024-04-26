@@ -4,7 +4,11 @@ Usage:
 python3 show_result.py --mode [single|pairwise-baseline|pairwise-all]
 """
 import argparse
+
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 
 
 def display_result_single(args):
@@ -19,6 +23,8 @@ def display_result_single(args):
 
     print(f"Input file: {input_file}")
     df_all = pd.read_json(input_file, lines=True)
+    draw_graph_mean_by_categories(df_all) #画图
+    draw_graph_detail_by_categories(df_all)
     df = df_all[["model", "score", "turn"]]
     df = df[df["score"] != -1]
 
@@ -92,6 +98,126 @@ def display_result_single(args):
 #     )
 #     print(df.sort_values(by="win_rate_adjusted", ascending=False))
 
+
+def draw_graph_mean_by_categories(df):
+    # 筛选所需数据列，并排除无效得分
+    df_filtered = df[['question_id', 'score', 'turn']]
+    df_filtered = df_filtered[df_filtered['score'] != -1]
+
+    # 定义问题分类
+    categories = {
+        'writing': range(81, 91),
+        'roleplay': range(91, 101),
+        'reasoning': range(101, 111),
+        'math': range(111, 121),
+        'coding': range(121, 131),
+        'extraction': range(131, 141),
+        'stem': range(141, 151),
+        'humanities': range(151, 161)
+    }
+
+    # 为每个问题ID分配类别
+    df_filtered['category'] = df_filtered['question_id'].apply(lambda qid: next((cat for cat, rng in categories.items() if qid in rng), 'Other'))
+
+    # 创建图形和轴对象
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    # 定义柱状图的宽度和间隔
+    width = 0.35
+    category_pos = np.arange(len(categories))  # 类别位置
+    category_labels = list(categories.keys())  # 类别标签
+
+    # 处理每一轮的得分，并分别绘制
+    for turn in [1, 2]:
+        scores_by_category = [df_filtered[(df_filtered['category'] == cat) & (df_filtered['turn'] == turn)]['score'].mean() for cat in categories]
+        # 根据轮次计算偏移量
+        offset = -width/2 if turn == 1 else width/2
+        bars = ax.bar(category_pos + offset, scores_by_category, width, label=f'Turn {turn}', alpha=0.8)
+
+        # 为每个柱子添加得分标注
+        for bar, score in zip(bars, scores_by_category):
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{score:.2f}',
+                    ha='center', va='bottom')
+
+    # 设置图表标题和轴标签
+    ax.set_title('Average Scores by Category and Turn')
+    ax.set_xticks(category_pos)
+    ax.set_xticklabels(category_labels, rotation=45)
+    ax.set_xlabel('Category')
+    ax.set_ylabel('Average Score')
+    ax.legend()
+
+    # 调整布局
+    plt.tight_layout()
+
+    # 显示图表
+    plt.show()
+
+def draw_graph_detail_by_categories(df):
+    # 筛选所需数据列，并排除无效得分
+    df_filtered = df[['question_id', 'score', 'turn']]
+    df_filtered = df_filtered[df_filtered['score'] != -1]
+
+    # 定义问题分类
+    categories = {
+        'writing': range(81, 91),
+        'roleplay': range(91, 101),
+        'reasoning': range(101, 111),
+        'math': range(111, 121),
+        'coding': range(121, 131),
+        'extraction': range(131, 141),
+        'stem': range(141, 151),
+        'humanities': range(151, 161)
+    }
+
+    # 为每个问题ID分配类别
+    df_filtered['category'] = df_filtered['question_id'].apply(
+        lambda qid: next((cat for cat, rng in categories.items() if qid in rng), 'Other'))
+
+    # 创建图形和轴对象
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    # 柱状图的宽度和间隔
+    width = 0.35
+    spacing = 0.1  # 类别之间的间隔
+
+    # 绘制每个类别中每个问题的得分
+    for index, category in enumerate(categories.keys()):
+        # 为该类别的每个问题分别计算位置
+        cat_questions = df_filtered[df_filtered['category'] == category]['question_id'].unique()
+        cat_questions = np.sort(cat_questions)
+        positions = np.arange(len(cat_questions)) + index * (len(cat_questions) + spacing)  # 计算位置
+
+        for turn in [1, 2]:
+            scores = df_filtered[(df_filtered['category'] == category) & (df_filtered['turn'] == turn)]
+            scores = [
+                scores[scores['question_id'] == qid]['score'].values[0] if qid in scores['question_id'].values else 0
+                for qid in cat_questions]
+            offset = -width / 2 if turn == 1 else width / 2
+            ax.bar(positions + offset, scores, width, label=f'{category} Turn {turn}' if index == 0 else "", alpha=0.8)
+
+    # 设置图表标题和轴标签
+    ax.set_title('Scores by Category and Turn for Each Question')
+    ax.set_xlabel('Category and Question ID')
+    ax.set_ylabel('Score')
+    if index == 0:
+        ax.legend(title='Turn')
+
+    # 自定义x轴标签显示具体问题ID
+    custom_labels = []
+    for category in categories.keys():
+        for qid in range(categories[category][0], categories[category][-1] + 1):
+            custom_labels.append(f"{category}-{qid}")
+
+    # 设置自定义x轴标签
+    ax.set_xticks(np.arange(len(custom_labels)))
+    ax.set_xticklabels(custom_labels, rotation=90)  # 旋转标签以更好显示
+
+    # 调整布局
+    plt.tight_layout()
+
+    # 显示图表
+    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

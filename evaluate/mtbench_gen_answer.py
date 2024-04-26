@@ -48,28 +48,32 @@ print("args:")
 for arg in vars(args):
     print(f"{arg}: {getattr(args, arg)}")
 
-# 根据模型路径提取模型名称，用于保存结果
-if args.lora_path:
-    pre_str, checkpoint_str = os.path.split(args.lora_path)
-    _, exp_name = os.path.split(pre_str)
-    checkpoint_id = checkpoint_str.split("-")[-1]
-    model_name = f"{exp_name}_{checkpoint_id}"
-else:
-    pre_str, last_str = os.path.split(args.base_model_path)
-    if last_str.startswith("full"):
-        _, exp_name = os.path.split(pre_str)
-        checkpoint_id = last_str.split("-")[-1]
-        model_name = f"{exp_name}_{checkpoint_id}"
-    else:
-        model_name = last_str
-
 # 获取当前日期和时间
 current_time = datetime.now()
 # 将日期和时间格式化为字符串（例如 "20230424_153045"）
 formatted_time = current_time.strftime("%Y%m%d_%H%M%S")
 # 设置问题和答案文件的路径
 question_file = f"question.jsonl"
-answer_file = f"model_answer/{model_name}_{formatted_time}.jsonl"
+
+# 根据模型路径提取模型名称，用于保存结果
+if args.lora_path:
+    pre_str, checkpoint_str = os.path.split(args.lora_path)
+    _, exp_name = os.path.split(pre_str)
+    checkpoint_id = checkpoint_str.split("-")[-1]
+    model_name = f"{exp_name}_{checkpoint_id}"
+    answer_file = f"model_answer/{model_name}.jsonl"
+else:
+    pre_str, last_str = os.path.split(args.base_model_path)
+    if last_str.startswith("full"):
+        _, exp_name = os.path.split(pre_str)
+        checkpoint_id = last_str.split("-")[-1]
+        model_name = f"{exp_name}_{checkpoint_id}"
+        answer_file = f"model_answer/{model_name}_{formatted_time}.jsonl"
+    else:
+        model_name = last_str
+        answer_file = f"model_answer/{model_name}_{formatted_time}.jsonl"
+
+
 
 # 加载模型和分词器
 model = AutoModelForCausalLM.from_pretrained(args.base_model_path, torch_dtype=torch.float16).to('cuda')

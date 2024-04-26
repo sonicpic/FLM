@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+import datetime
 
 import numpy as np
 
@@ -17,7 +18,27 @@ from servers.serverprox import ServerProx
 from servers.serverscaffold import ServerScaffold
 from utils.prompter import Prompter
 
+
+def save_args_with_timestamp(time,args,path):
+    # 定义文件名，包含时间戳
+    os.makedirs(path, exist_ok=True)
+    filename = f"args_{time}.txt"
+    full_path = os.path.join(path, filename)
+    # 打开文件进行写入
+    with open(full_path, 'w') as file:
+        file.write("args:\n")
+        for arg in vars(args):
+            file.write(f"{arg}: {getattr(args, arg)}\n")
+
+def get_timestamp():
+    # 获取当前时间戳
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return timestamp
+
 if __name__ == '__main__':
+
+    # 该次执行的时间戳
+    timestamp = get_timestamp()
 
     # 设置参数
     parser = argparse.ArgumentParser()
@@ -77,16 +98,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # 确定输入输出路径
+    args.data_path = os.path.join(args.data_path, str(args.num_clients))
+    args.output_dir = os.path.join(args.output_dir, str(args.num_clients),timestamp)
+
     # 打印参数配置
     print("args:")
     for arg in vars(args):
         print(f"{arg}: {getattr(args, arg)}")
+    # 保存带时间戳的参数
+    save_args_with_timestamp(timestamp,args,args.output_dir)
 
-    # 根据客户端数量确定输入输出路径
-    args.data_path = os.path.join(args.data_path, str(args.num_clients))
-    args.output_dir = os.path.join(args.output_dir, str(args.num_clients))
-    # print(args.data_path)
-    # print(args.output_dir)
+
 
     # set up the global model & toknizer
     args.gradient_accumulation_steps = args.local_batch_size // args.local_micro_batch_size  # 执行一次梯度更新前需要累积的微批次的数量

@@ -36,12 +36,17 @@ temperature_config = {
 # 设置命令行参数
 parser = argparse.ArgumentParser()
 parser.add_argument("--base_model_path", type=str, default='meta-llama/Llama-2-7b-hf')  # 基础模型路径
-parser.add_argument("--lora_path", type=str, default='../lora-shepherd/100')  # LORA优化路径
+parser.add_argument("--lora_path", type=str, default='../output/100')  # LORA优化路径
+parser.add_argument("--round", type=str, default='19')  # 最大训练轮数-1（用于获取最新轮的模型）
 # parser.add_argument("--template", type=str, default="vicuna_v1.1")  # 使用的对话模板
 parser.add_argument("--template", type=str, default="alpaca")  # 使用的对话模板
 parser.add_argument("--max_new_token", type=int, default=512)  # 最大新生成token数量
 parser.add_argument("--num_choices", type=int, default=1)  # 生成答案的选项数量
 args = parser.parse_args()
+# 打印参数配置
+print("args:")
+for arg in vars(args):
+    print(f"{arg}: {getattr(args, arg)}")
 
 # 根据模型路径提取模型名称，用于保存结果
 if args.lora_path:
@@ -72,7 +77,7 @@ config = LoraConfig.from_pretrained(args.lora_path)
 print("====LoRA Config====")
 print(config)
 model = get_peft_model(model, config)
-state_dict = torch.load(os.path.join(args.lora_path, '19/adapter_model.bin'))
+state_dict = torch.load(os.path.join(args.lora_path, args.round, 'adapter_model.bin'))
 set_peft_model_state_dict(model, state_dict, "default")
 tokenizer = AutoTokenizer.from_pretrained(args.base_model_path)
 

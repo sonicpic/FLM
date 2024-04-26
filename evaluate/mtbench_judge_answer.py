@@ -208,6 +208,10 @@ if __name__ == "__main__":
         "--first_n", type=int, help="A debug option. Only run the first `n` judgments."
     )
     args = parser.parse_args()
+    # 打印参数配置
+    print("args:")
+    for arg in vars(args):
+        print(f"{arg}: {getattr(args, arg)}")
 
     question_file = "question.jsonl"
     answer_dir = "model_answer"
@@ -235,7 +239,7 @@ if __name__ == "__main__":
         judges = make_judge_single(args.judge_model, judge_prompts)
         play_a_match_func = play_a_match_single
         output_file = (
-            f"data/mtbench/model_judgment/{args.judge_model}_single.jsonl"
+            f"model_judgment/{args.model_list}_single.jsonl"
         )
         make_match_func = make_match_single
         baseline_model = None
@@ -243,7 +247,7 @@ if __name__ == "__main__":
         judges = make_judge_pairwise(args.judge_model, judge_prompts)
         play_a_match_func = play_a_match_pair
         output_file = (
-            f"mtbench/model_judgment/{args.judge_model}_pair.jsonl"
+            f"model_judgment/{args.model_list}_pair.jsonl"
         )
         if args.mode == "pairwise-all":
             make_match_func = make_match_all_pairs

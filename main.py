@@ -158,9 +158,9 @@ if __name__ == '__main__':
     # 选择联邦学习算法
     if args.algorithm == "fedavg":
         server = ServerAvg(args)
-    if args.algorithm == "scaffold":
+    elif args.algorithm == "scaffold":
         server = ServerScaffold(args)
-    if args.algorithm == "fedprox":
+    elif args.algorithm == "fedprox":
         server = ServerProx(args)
     else:
         print("Please choose the correct federated learning aggregation algorithm.")

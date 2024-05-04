@@ -160,7 +160,7 @@ class Client(object):
             data_point["response"],
         )
         # print("full_prompt")
-        # print(full_prompt)
+        # print("prompt: {}".format(full_prompt))
         tokenized_full_prompt = self.tokenize(full_prompt)
         if self.train_on_inputs == False:
             print("train_on_inputs == False")

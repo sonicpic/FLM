@@ -9,11 +9,11 @@ import pdb
 # num_clients = int(sys.argv[1])
 # diff_quantity = int(sys.argv[2])
 
-num_clients = 50
-diff_quantity = 1
+num_clients = 20
+diff_quantity = 3
 
-np.random.seed(1114)
-random.seed(1114)
+# np.random.seed(1114)
+# random.seed(1114)
 
 # Divide the entire dataset into a training set and a test set.
 
@@ -40,10 +40,10 @@ with open(os.path.join(data_path, "global_test.json"), 'w') as outfile:
 
 # Partition the global training data into smaller subsets for each client's local training dataset
 
-if diff_quantity:
+if diff_quantity == 1:
     min_size = 0
     min_require_size = 40
-    alpha = 0.5
+    alpha = 1
 
     N = len(remaining_df)
     net_dataidx_map = {}
@@ -66,14 +66,27 @@ if diff_quantity:
         print(min_size)
 
 
-else:
+elif diff_quantity == 2:
     num_shards_per_clients = 2
     remaining_df_index = remaining_df.index.values
+    random.shuffle(remaining_df_index)
+    print(remaining_df_index)
     shards = np.array_split(remaining_df_index, int(num_shards_per_clients * num_clients))
     random.shuffle(shards)
 
     shards = [shards[i:i + num_shards_per_clients] for i in range(0, len(shards), num_shards_per_clients)]
     idx_partition = [np.concatenate(shards[n]).tolist() for n in range(num_clients)]
+
+elif diff_quantity == 3:
+    remaining_df_index = remaining_df.index.values
+    idx_partition = [[] for _ in range(num_clients)]  # 创建一个列表，包含每个客户端的索引列表
+
+    # 为每条数据随机分配一个客户端
+    for index in remaining_df_index:
+        client_id = random.randint(0, num_clients - 1)  # 随机选择一个客户端ID
+        idx_partition[client_id].append(index)  # 将索引添加到相应客户端的列表中
+
+    print(idx_partition)  # 打印每个客户端的数据索引
 
 
 for client_id, idx in enumerate(idx_partition):

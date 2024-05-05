@@ -175,8 +175,10 @@ def main(args):
         print("Average accuracy {:.3f} - {}".format(subcat_acc, subcat))
 
     for cat in cat_cors:
+        # print("{}:{}".format(cat,len(np.concatenate(cat_cors[cat]))))
         cat_acc = np.mean(np.concatenate(cat_cors[cat]))
         print("Average accuracy {:.3f} - {}".format(cat_acc, cat))
+    # print("{}:{}".format(all_cors, len(np.concatenate(all_cors))))
     weighted_acc = np.mean(np.concatenate(all_cors))
     print("Average accuracy: {:.3f}".format(weighted_acc))
 

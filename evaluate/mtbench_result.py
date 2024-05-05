@@ -174,6 +174,10 @@ def draw_graph_detail_by_categories(df):
     df_filtered['category'] = df_filtered['question_id'].apply(
         lambda qid: next((cat for cat, rng in categories.items() if qid in rng), 'Other'))
 
+    #保存
+    print(df_filtered)
+    df_filtered.to_csv("filtered_data.csv", index=False)
+
     # 创建图形和轴对象
     fig, ax = plt.subplots(figsize=(14, 6))
 

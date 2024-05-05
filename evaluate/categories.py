@@ -58,9 +58,9 @@ subcategories = {
     "world_religions": ["philosophy"],
 }
 
-categories = {
-    "STEM": ["physics", "chemistry", "biology", "computer science", "math", "engineering"],
-    "humanities": ["history", "philosophy", "law"],
-    "social sciences": ["politics", "culture", "economics", "geography", "psychology"],
-    "other (business, health, misc.)": ["other", "business", "health"],
+categories = {# 14042
+    "STEM": ["physics", "chemistry", "biology", "computer science", "math", "engineering"],#422451 18   3018
+    "humanities": ["history", "philosophy", "law"],#463 13   4705
+    "social sciences": ["politics", "culture", "economics", "geography", "psychology"],#42312 12   3077
+    "other (business, health, misc.)": ["other", "business", "health"],#338 14   3242
 }

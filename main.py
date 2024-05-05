@@ -123,6 +123,10 @@ if __name__ == '__main__':
         torch_dtype=torch.float16,
     )
 
+    # # 可训练参数数量
+    # trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    # print(f"原始模型可训练参数数量: {trainable_param_count}")
+
     # 加载Token
     args.tokenizer = AutoTokenizer.from_pretrained(args.global_model)
     args.tokenizer.pad_token_id = (
@@ -146,6 +150,10 @@ if __name__ == '__main__':
     # 加载PEFT模型
     model = get_peft_model(model, args.config)
     args.model = model
+
+    # # 可训练参数数量
+    # trainable_param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    # print(f"LoRA可训练参数数量: {trainable_param_count}")
 
     # print("LoRA_model_load")
     # # 打印模型的结构和每一层的数据类型

@@ -116,13 +116,13 @@ class ServerScaffold(Server):
 
     def get_auxiliary_dict(self, num_clients, global_dict):
 
-        global_auxiliary = {}  # c in SCAFFOLD
+        global_auxiliary = {}
         for key in global_dict.keys():
             global_auxiliary[key] = torch.zeros_like(global_dict[key])
         auxiliary_model_list = [copy.deepcopy(global_auxiliary) for _ in
-                                range(num_clients)]  # c_i in SCAFFOLD
+                                range(num_clients)]
         auxiliary_delta_dict = [copy.deepcopy(global_auxiliary) for _ in
-                                range(num_clients)]  # delta c_i in SCAFFOLD
+                                range(num_clients)]
 
         return global_auxiliary, auxiliary_model_list, auxiliary_delta_dict
 
